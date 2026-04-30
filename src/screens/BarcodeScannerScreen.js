@@ -4,7 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { PrimaryButton } from '../components/ui';
 import { colors, spacing, radius, shadow, typography } from '../styles/theme';
 
-export default function BarcodeScannerScreen({ navigation }) {
+export default function BarcodeScannerScreen({ navigation, route }) {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
 
@@ -14,7 +14,12 @@ export default function BarcodeScannerScreen({ navigation }) {
     Alert.alert('Código lido! 🎉', data, [
       {
         text: 'Usar este código',
-        onPress: () => navigation.navigate('Home', { scannedBarcode: data }),
+        onPress: () =>
+          navigation.navigate('Home', {
+            scannedBarcode: data,
+            currentName: route.params?.currentName,
+            currentPrice: route.params?.currentPrice,
+          }),
       },
       {
         text: 'Ler novamente',
@@ -59,34 +64,29 @@ export default function BarcodeScannerScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Camera */}
       <CameraView
         style={StyleSheet.absoluteFill}
         facing="back"
+        barcodeScannerSettings={{
+          barcodeTypes: ['ean13', 'ean8', 'qr', 'code128'],
+        }}
         onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
       />
 
-      {/* Overlay */}
       <View style={styles.overlay}>
-        {/* Top dim */}
         <View style={styles.dimArea} />
 
-        {/* Middle row */}
         <View style={styles.middleRow}>
           <View style={styles.dimSide} />
-
-          {/* Scan frame */}
           <View style={styles.scanFrame}>
             <View style={[styles.corner, styles.cornerTL]} />
             <View style={[styles.corner, styles.cornerTR]} />
             <View style={[styles.corner, styles.cornerBL]} />
             <View style={[styles.corner, styles.cornerBR]} />
           </View>
-
           <View style={styles.dimSide} />
         </View>
 
-        {/* Bottom area */}
         <View style={[styles.dimArea, styles.bottomArea]}>
           <Text style={styles.instructionText}>
             {scanned ? 'Código lido!' : 'Aponte para o código de barras'}
@@ -111,10 +111,12 @@ const CORNER_THICKNESS = 4;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
+  centered: {
+    flex: 1, justifyContent: 'center', alignItems: 'center',
+    backgroundColor: colors.background,
+  },
   loadingText: { ...typography.body, color: colors.textSecondary },
 
-  // Permission screen
   permissionContainer: {
     flex: 1, backgroundColor: colors.background,
     justifyContent: 'center', alignItems: 'center', padding: spacing.lg,
@@ -134,28 +136,14 @@ const styles = StyleSheet.create({
     textAlign: 'center', lineHeight: 20,
   },
 
-  // Scanner overlay
   overlay: { ...StyleSheet.absoluteFillObject },
-  dimArea: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-  },
-  middleRow: {
-    flexDirection: 'row',
-    height: FRAME_SIZE,
-  },
-  dimSide: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-  },
-  scanFrame: {
-    width: FRAME_SIZE,
-    height: FRAME_SIZE,
-  },
+  dimArea: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
+  middleRow: { flexDirection: 'row', height: FRAME_SIZE },
+  dimSide: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' },
+  scanFrame: { width: FRAME_SIZE, height: FRAME_SIZE },
   corner: {
     position: 'absolute',
-    width: CORNER_SIZE,
-    height: CORNER_SIZE,
+    width: CORNER_SIZE, height: CORNER_SIZE,
     borderColor: colors.white,
   },
   cornerTL: {
@@ -179,15 +167,12 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 4,
   },
   bottomArea: {
-    alignItems: 'center',
-    justifyContent: 'flex-start',
+    alignItems: 'center', justifyContent: 'flex-start',
     paddingTop: spacing.xl,
   },
   instructionText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
+    color: colors.white, fontSize: 16,
+    fontWeight: '500', textAlign: 'center',
   },
   rescanButton: {
     marginTop: spacing.lg,
@@ -197,9 +182,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     ...shadow.button,
   },
-  rescanText: {
-    color: colors.white,
-    fontWeight: '600',
-    fontSize: 14,
-  },
+  rescanText: { color: colors.white, fontWeight: '600', fontSize: 14 },
 });

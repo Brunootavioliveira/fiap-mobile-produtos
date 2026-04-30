@@ -11,7 +11,6 @@ import {
 import { PrimaryButton, SecondaryButton, DangerButton, Card } from '../components/ui';
 import { colors, spacing, radius, typography, shadow } from '../styles/theme';
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
 
 function formatPrice(raw) {
   // Remove tudo que não é dígito
@@ -40,7 +39,6 @@ function validateForm(name, price, barcode) {
   return errors;
 }
 
-// ─── component ────────────────────────────────────────────────────────────────
 
 export default function HomeScreen({ navigation, route }) {
   // Form state
@@ -55,20 +53,22 @@ export default function HomeScreen({ navigation, route }) {
   const [editingProductId, setEditingProductId] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Refs para encadeamento de teclado
   const priceRef = useRef(null);
   const barcodeRef = useRef(null);
 
-  // ── Carrega produtos ao focar na tela (resolve perda de dados ao voltar do scanner)
   useFocusEffect(
     useCallback(() => {
       loadProducts();
 
-      // Restaura código de barras ao voltar do scanner SEM limpar o restante do form
       if (route.params?.scannedBarcode) {
         setBarcode(String(route.params.scannedBarcode));
-        // Limpa o param para não reaplicar em foco futuro
-        navigation.setParams({ scannedBarcode: undefined });
+        if (route.params?.currentName) setName(route.params.currentName);
+        if (route.params?.currentPrice) setPrice(route.params.currentPrice);
+        navigation.setParams({
+          scannedBarcode: undefined,
+          currentName: undefined,
+          currentPrice: undefined,
+        });
       }
     }, [route.params?.scannedBarcode])
   );
@@ -82,7 +82,6 @@ export default function HomeScreen({ navigation, route }) {
     }
   }
 
-  // ── Validação em tempo real (só mostra erro após o campo ser tocado)
   function handleBlur(field) {
     setTouched((prev) => ({ ...prev, [field]: true }));
     const errs = validateForm(name, price, barcode);
@@ -113,7 +112,6 @@ export default function HomeScreen({ navigation, route }) {
   }
 
   async function handleSaveProduct() {
-    // Marca todos como tocados para mostrar erros
     setTouched({ name: true, price: true });
     const errs = validateForm(name, price, barcode);
     setErrors(errs);
@@ -175,7 +173,6 @@ export default function HomeScreen({ navigation, route }) {
     );
   }
 
-  // ── Form component (extraído para não poluir o render principal)
   function renderForm() {
     return (
       <Card style={styles.formCard}>
@@ -188,7 +185,10 @@ export default function HomeScreen({ navigation, route }) {
           style={styles.scannerButton}
           onPress={() => {
             Keyboard.dismiss();
-            navigation.navigate('BarcodeScanner');
+            navigation.navigate('BarcodeScanner', {
+              currentName: name,
+              currentPrice: price,
+            });
           }}
           activeOpacity={0.8}
         >
@@ -382,7 +382,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
 
-  // Form
   formCard: {},
   formTitle: { ...typography.h3, marginBottom: spacing.md },
   scannerButton: {
