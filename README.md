@@ -1,4 +1,4 @@
-# 📦 FIAP Mobile Produtos
+# 📦 FIAP Mobile Produtos (Acadêmico)
 
 App mobile de gerenciamento de produtos com React Native, Expo e Firebase.
 
@@ -73,4 +73,4 @@ src/
 
 ## 🔒 Variáveis de ambiente
 
-O arquivo `.env` não é versionado. Nunca suba suas credenciais do Firebase para o repositório.
+O arquivo `.env` não é versionado. Não subi minhas credenciais do Firebase para o repositório.
